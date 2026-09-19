@@ -4,7 +4,9 @@ function App() {
 
   return (
     <>
-    Hii
+    <div className='bg-amber-400'>
+      Helloe world
+    </div>
     </>
   )
 }

@@ -23,8 +23,8 @@ export class Claim {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ required: true })
-  documentUrl!: string;
+  @Prop({ type: [String], default: [] })
+  documentUrl!: string[];
 
   @Prop({ type: String, enum: ClaimStatus, default: ClaimStatus.PENDING })
   status!: ClaimStatus;

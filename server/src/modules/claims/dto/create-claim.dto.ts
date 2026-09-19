@@ -40,12 +40,4 @@ export class CreateClaimDto {
   @IsString({ message: 'Description must be a string' })
   @IsNotEmpty({ message: 'Description is required' })
   description!: string;
-
-  @ApiProperty({
-    description: 'URL or path reference to the uploaded receipt or prescription document',
-    example: 'http://localhost:3000/uploads/receipt-12345.pdf',
-  })
-  @IsString({ message: 'Document URL must be a string' })
-  @IsNotEmpty({ message: 'Supporting document URL/path is required' })
-  documentUrl!: string;
 }
