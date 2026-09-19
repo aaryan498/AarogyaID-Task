@@ -1,13 +1,17 @@
-import { useState } from 'react'
+import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './components/ui/Toast'
+import AppRouter from './routes/AppRouter'
 
 function App() {
-
   return (
-    <>
-    <div className='bg-amber-400'>
-      Helloe world
-    </div>
-    </>
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
   )
 }
 
