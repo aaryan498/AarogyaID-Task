@@ -6,10 +6,14 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -39,7 +43,7 @@ export class ClaimsController {
   @Roles(Role.PATIENT)
   @ApiOperation({
     summary: 'Submit a new medical claim',
-    description: 'Allows a patient to submit a new claim with requested amount and supporting document URL.',
+    description: 'Allows a patient to submit a new claim with requested amount and details.',
   })
   @ApiResponse({
     status: 201,
@@ -53,6 +57,37 @@ export class ClaimsController {
   @ApiResponse({ status: 403, description: 'Forbidden - Patients only.' })
   async create(@Body() createClaimDto: CreateClaimDto) {
     return await this.claimsService.create(createClaimDto);
+  }
+
+  /**
+   * P-1 Step 2: Upload documents for a claim
+   */
+  @Post(':id/upload-documents')
+  @Roles(Role.PATIENT)
+  @UseInterceptors(FilesInterceptor('files', 10))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Upload supporting documents for a claim',
+    description: 'Uploads PDFs and images to Cloudinary and attaches their URLs to the specified claim.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'MongoDB ObjectId of the claim',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Documents uploaded and attached successfully.',
+  })
+  @ApiResponse({ status: 400, description: 'Bad Request - No files provided.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Patients only.' })
+  @ApiResponse({ status: 404, description: 'Claim not found.' })
+  async uploadDocuments(
+    @Param('id') id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return await this.claimsService.uploadClaimDocuments(id, files);
   }
 
   /**

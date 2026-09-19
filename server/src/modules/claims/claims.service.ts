@@ -8,12 +8,14 @@ import { Model } from 'mongoose';
 import { Claim, ClaimDocument, ClaimStatus } from './schemas/claim.schema';
 import { CreateClaimDto } from './dto/create-claim.dto';
 import { UpdateClaimStatusDto } from './dto/update-claim-status.dto';
+import { CloudinaryService } from '../../common/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ClaimsService {
   constructor(
     @InjectModel(Claim.name)
     private readonly claimModel: Model<ClaimDocument>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   /**
@@ -25,8 +27,27 @@ export class ClaimsService {
       status: ClaimStatus.PENDING,
       submissionDate: new Date(),
       approvedAmount: 0,
+      documentUrl: [],
     });
     return await newClaim.save();
+  }
+
+  /**
+   * Upload multiple document files for a specific claim (Patient Portal - Step 2)
+   */
+  async uploadClaimDocuments(
+    claimId: string,
+    files: Express.Multer.File[],
+  ): Promise<ClaimDocument> {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('At least one document file must be uploaded');
+    }
+
+    const claim = await this.findOne(claimId);
+    const uploadedUrls = await this.cloudinaryService.uploadMultipleFiles(files);
+
+    claim.documentUrl = [...claim.documentUrl, ...uploadedUrls];
+    return await claim.save();
   }
 
   /**
