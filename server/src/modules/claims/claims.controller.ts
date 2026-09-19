@@ -28,6 +28,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../users/schemas/user.schema';
+import { GetClaimsFilterDto } from './dto/get-claims-filter.dto';
 
 @ApiTags('Claims')
 @Controller('claims')
@@ -91,28 +92,23 @@ export class ClaimsController {
   }
 
   /**
-   * I-1 & P-2: Get claims (Filtered by status for Insurer, or fetch all)
+   * I-1 & P-2: Get claims (Filtered by status, date range, or claim amount for Insurer)
    */
   @Get()
   @Roles(Role.INSURER)
   @ApiOperation({
-    summary: 'Get all claims or filter by status',
-    description: 'Retrieves claims. Can be filtered using status (Pending, Approved, Rejected).',
-  })
-  @ApiQuery({
-    name: 'status',
-    enum: ClaimStatus,
-    required: false,
-    description: 'Optional status filter (Pending, Approved, Rejected)',
+    summary: 'Get all claims with optional filtering',
+    description:
+      'Retrieves claims for the insurer portal. Supports optional filters for status, submission date range (fromDate, toDate), and claim amount range (minAmount, maxAmount).',
   })
   @ApiResponse({
     status: 200,
-    description: 'List of claims retrieved successfully.',
+    description: 'List of filtered claims retrieved successfully.',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insurers only.' })
-  async findAll(@Query('status') status?: ClaimStatus) {
-    return await this.claimsService.findAll(status);
+  async findAll(@Query() filterDto: GetClaimsFilterDto) {
+    return await this.claimsService.findAll(filterDto);
   }
 
   /**

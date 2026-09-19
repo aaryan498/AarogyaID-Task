@@ -8,6 +8,7 @@ import { Model } from 'mongoose';
 import { Claim, ClaimDocument, ClaimStatus } from './schemas/claim.schema';
 import { CreateClaimDto } from './dto/create-claim.dto';
 import { UpdateClaimStatusDto } from './dto/update-claim-status.dto';
+import { GetClaimsFilterDto } from './dto/get-claims-filter.dto';
 import { CloudinaryService } from '../../common/cloudinary/cloudinary.service';
 
 @Injectable()
@@ -51,10 +52,36 @@ export class ClaimsService {
   }
 
   /**
-   * Get all claims with optional status filter (Insurer / Patient Portal)
+   * Get all claims with optional status, date range, and amount range filters (Insurer / Patient Portal)
    */
-  async findAll(status?: ClaimStatus): Promise<ClaimDocument[]> {
-    const filter = status ? { status } : {};
+  async findAll(filterDto: GetClaimsFilterDto = {}): Promise<ClaimDocument[]> {
+    const { status, fromDate, toDate, minAmount, maxAmount } = filterDto;
+    const filter: Record<string, any> = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (fromDate || toDate) {
+      filter.submissionDate = {};
+      if (fromDate) {
+        filter.submissionDate.$gte = fromDate;
+      }
+      if (toDate) {
+        filter.submissionDate.$lte = toDate;
+      }
+    }
+
+    if (minAmount !== undefined || maxAmount !== undefined) {
+      filter.claimAmount = {};
+      if (minAmount !== undefined) {
+        filter.claimAmount.$gte = minAmount;
+      }
+      if (maxAmount !== undefined) {
+        filter.claimAmount.$lte = maxAmount;
+      }
+    }
+
     return await this.claimModel.find(filter).sort({ createdAt: -1 }).exec();
   }
 
