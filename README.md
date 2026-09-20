@@ -18,7 +18,7 @@ Every account has exactly one role, `PATIENT` or `INSURER`, and each role can re
 | Frontend | React 19, Vite, Tailwind CSS 4, React Router 7, lucide-react |
 | Backend | NestJS 11 (Node.js, TypeScript), Passport JWT, class-validator, Swagger (OpenAPI) |
 | Database | MongoDB through Mongoose |
-| File storage | Cloudinary |
+| File storage | Supabase Storage |
 | Authentication | JWT bearer tokens, bcrypt password hashing |
 
 ## Repository layout
@@ -34,7 +34,7 @@ server/   NestJS REST API
 
 - Node.js 20.19 or later (22.12 or later also works) and npm
 - A MongoDB database, either local or hosted (for example MongoDB Atlas)
-- A Cloudinary account for document uploads
+- A Supabase project with a `claim-documents` storage bucket for document uploads
 
 ### Steps
 
@@ -97,9 +97,8 @@ Both `.env` files are git-ignored. Copy the matching `.env.example` and fill in 
 | `MONGODB_URI` | MongoDB connection string. |
 | `JWT_SECRET` | Secret used to sign and verify tokens. If unset, the server falls back to a built-in development value, so always set it. |
 | `JWT_EXPIRES_IN` | Token lifetime, for example `1d`, `12h`, or `30m`. Defaults to `1d`. |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name. |
-| `CLOUDINARY_API_KEY` | Cloudinary API key. |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret. |
+| `SUPABASE_URL` | Supabase project URL. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key used by the backend for storage operations. |
 
 ### Client (`client/.env`)
 
@@ -128,7 +127,7 @@ There is no seed script. Accounts are created through the registration page (`/r
 - **Frontend.** `client/vercel.json` rewrites every path to `/index.html`, so client-side routes such as `/patient/claims/:id` survive a page refresh on Vercel. The project root is `client/`, the build command is `npm run build`, and the output directory is `dist`. `VITE_API_BASE_URL` must be set in the hosting environment before the build runs.
 - **Backend.** The API builds with `npm run build` and starts with `npm run start:prod` (`node dist/main`). It reads `PORT` and the variables listed above from its environment.
 - **Database.** MongoDB, reached through `MONGODB_URI`.
-- **File storage.** Cloudinary; uploaded documents are stored in the `aarogya_claims` folder.
+- **File storage.** Supabase Storage; uploaded documents are stored in the `claim-documents` bucket.
 - **Hosting providers and environment configuration.** `<fill in: where the API and database are hosted, and how environment variables are configured>`
 
 ## Product walkthrough
@@ -145,7 +144,7 @@ Access is enforced twice. In the client, route guards send each role to its own 
 
 1. **Register or log in.** After authenticating, the patient lands on **My Claims** (`/patient`).
 2. **Submit a claim, step 1 of 2** (`/patient/claims/new`). The name and email come from the patient's account and are read-only. The patient enters the claim amount (greater than 0) and a description. The claim is created with status `Pending`.
-3. **Upload documents, step 2 of 2** (`/patient/claims/:id/upload`). The patient selects up to 10 files (PDF, JPG, or PNG, 5 MB each). The files are uploaded to Cloudinary and their URLs are saved on the claim. This step can be skipped; a claim without documents shows a "Documents not uploaded yet" notice with a link back to the upload step, and further uploads are appended to the existing ones.
+3. **Upload documents, step 2 of 2** (`/patient/claims/:id/upload`). The patient selects up to 10 files (PDF, JPG, or PNG, 5 MB each). The files are uploaded to Supabase Storage and their public URLs are saved on the claim. This step can be skipped; a claim without documents shows a "Documents not uploaded yet" notice with a link back to the upload step, and further uploads are appended to the existing ones.
 4. **Track claims.** My Claims lists every claim with its status, submission date, and approved amount, as a table on wider screens and as cards on smaller ones. The approved amount is shown only for approved claims; pending claims read "Awaiting review" and rejected claims read "Not approved".
 5. **Claim detail** (`/patient/claims/:id`). Shows the amount, submission date, approved amount, description, insurer comments, and links to the uploaded documents.
 
@@ -158,7 +157,7 @@ Access is enforced twice. In the client, route guards send each role to its own 
 
 ### Data model
 
-Claims are stored in MongoDB with these fields: `name`, `email`, `claimAmount`, `description`, `documentUrl` (an array of Cloudinary URLs), `status` (`Pending`, `Approved`, or `Rejected`, default `Pending`), `submissionDate`, `approvedAmount` (default `0`), `insurerComments`, and `createdAt`/`updatedAt` timestamps. Users are stored with `name`, a unique lowercase `email`, a hashed `password`, and `role`.
+Claims are stored in MongoDB with these fields: `name`, `email`, `claimAmount`, `description`, `documentUrl` (an array of Supabase Storage public URLs), `status` (`Pending`, `Approved`, or `Rejected`, default `Pending`), `submissionDate`, `approvedAmount` (default `0`), `insurerComments`, and `createdAt`/`updatedAt` timestamps. Users are stored with `name`, a unique lowercase `email`, a hashed `password`, and `role`.
 
 ## API reference
 
@@ -195,7 +194,7 @@ All paths are relative to `/api/v1`. Every route except registration and login r
 - **Approved amount rules.** The approved amount cannot exceed the claim amount, approving without an amount defaults to the claim amount, and rejecting sets it to `0`.
 - **Decided claims are read-only in the UI.** The review panel does not allow a second decision on an approved or rejected claim. This is enforced in the client only; the API does not reject a repeated status update.
 - **Upload limits.** Each request accepts at most 10 files, each up to 5 MB, in PDF, JPG, or PNG format. File type is checked against the MIME type declared by the client, not the file contents.
-- **Documents use public URLs.** Files are stored in Cloudinary and referenced by their URLs, so anyone holding a link can open the file.
+- **Documents use public URLs.** Files are stored in the public Supabase Storage bucket and referenced by their URLs, so anyone holding a link can open the file.
 - **CORS is open.** The API currently accepts requests from any origin for review purposes; restrict it to the frontend origin for production use.
 - **Sessions.** Tokens expire after `JWT_EXPIRES_IN` (default one day). There are no refresh tokens, and logging out clears the token in the browser without revoking it on the server.
 - **Not implemented.** Password reset, email verification, rate limiting, and pagination of claim lists.

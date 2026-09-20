@@ -92,7 +92,7 @@ export class ClaimsController {
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Upload supporting documents for a claim',
-    description: 'Uploads PDFs and images to Cloudinary and attaches their URLs to the specified claim.',
+    description: 'Uploads PDFs and images to Supabase Storage and attaches their URLs to the specified claim.',
   })
   @ApiParam({
     name: 'id',

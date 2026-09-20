@@ -7,6 +7,7 @@ import { Connection } from 'mongoose';
 import { ClaimsModule } from './modules/claims/claims.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { SupabaseModule } from './common/supabase/supabase.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuthModule } from './modules/auth/auth.module';
     ClaimsModule,
     UsersModule,
     AuthModule,
+    SupabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

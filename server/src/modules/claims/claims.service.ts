@@ -9,15 +9,15 @@ import { Claim, ClaimDocument, ClaimStatus } from './schemas/claim.schema';
 import { CreateClaimDto } from './dto/create-claim.dto';
 import { UpdateClaimStatusDto } from './dto/update-claim-status.dto';
 import { GetClaimsFilterDto } from './dto/get-claims-filter.dto';
-import { CloudinaryService } from '../../common/cloudinary/cloudinary.service';
+import { SupabaseService } from '../../common/supabase/supabase.service';
 
 @Injectable()
 export class ClaimsService {
   constructor(
     @InjectModel(Claim.name)
     private readonly claimModel: Model<ClaimDocument>,
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+    private readonly supabaseService: SupabaseService,
+  ) { }
 
   /**
    * Submit a new claim (Patient Portal)
@@ -45,7 +45,12 @@ export class ClaimsService {
     }
 
     const claim = await this.findOne(claimId);
-    const uploadedUrls = await this.cloudinaryService.uploadMultipleFiles(files);
+    const uploadedUrls = await Promise.all(
+      files.map((file) => {
+        const fileName = `claims/${claimId}/${Date.now()}-${file.originalname}`;
+        return this.supabaseService.uploadFile(file, fileName);
+      }),
+    );
 
     claim.documentUrl = [...claim.documentUrl, ...uploadedUrls];
     return await claim.save();
