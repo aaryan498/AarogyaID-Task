@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import Topbar from '../components/layout/Topbar'
+import Topbar from './Topbar'
 
 export default function AppLayout() {
   return (

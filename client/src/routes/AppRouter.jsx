@@ -14,7 +14,7 @@ import MyClaims from '../pages/patient/MyClaims'
 import SubmitClaimStep1 from '../pages/patient/SubmitClaimStep1'
 import UploadDocumentsStep2 from '../pages/patient/UploadDocumentsStep2'
 import ClaimDetail from '../pages/patient/ClaimDetail'
-import InsurerHomePlaceholder from '../pages/insurer/InsurerHomePlaceholder'
+import ClaimsDashboard from '../pages/insurer/ClaimsDashboard'
 
 function AuthLoading() {
   return (
@@ -95,7 +95,7 @@ export default function AppRouter() {
           path="/insurer"
           element={
             <RequireRole role="INSURER">
-              <InsurerHomePlaceholder />
+              <ClaimsDashboard />
             </RequireRole>
           }
         />

@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
-import Topbar from '../components/layout/Topbar'
-import Footer from '../components/layout/Footer'
+import Topbar from './Topbar'
+import Footer from './Footer'
 
 export default function MarketingLayout() {
   return (
