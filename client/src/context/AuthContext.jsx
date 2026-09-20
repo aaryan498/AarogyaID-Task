@@ -1,5 +1,7 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AuthContext } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
+import { setUnauthorizedHandler } from '../lib/apiClient'
 import * as authApi from '../lib/authApi'
 import { clearAuth, readAuth, writeAuth } from '../lib/authStorage'
 import { getTokenExpiry } from '../utils/jwt'
@@ -20,7 +22,15 @@ function loadSession() {
 }
 
 export function AuthProvider({ children }) {
+  const toast = useToast()
   const [session, setSession] = useState(loadSession)
+  // Mirrors `session` so several in-flight requests failing with 401 at once
+  // trigger a single logout and a single toast.
+  const sessionRef = useRef(session)
+
+  useEffect(() => {
+    sessionRef.current = session
+  }, [session])
 
   const persist = useCallback((data) => {
     const next = { token: data.access_token, user: data.user }
@@ -43,6 +53,18 @@ export function AuthProvider({ children }) {
     clearAuth()
     setSession(null)
   }, [])
+
+  // Token expired (or was rejected) while the tab was open: clear the session.
+  // RequireAuth then redirects to /login.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      if (!sessionRef.current) return
+      sessionRef.current = null
+      logout()
+      toast.info('Your session has expired. Please log in again.')
+    })
+    return () => setUnauthorizedHandler(null)
+  }, [logout, toast])
 
   const value = useMemo(
     () => ({

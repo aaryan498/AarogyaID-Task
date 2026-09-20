@@ -18,7 +18,8 @@ export default function Select({ id, name, label, error, hint, className, childr
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={clsx(
-            'block h-10 w-full appearance-none rounded-lg border bg-white pl-3 pr-9 text-sm text-slate-900',
+            // 16px on mobile prevents iOS Safari from zooming the page on focus.
+            'block h-10 w-full appearance-none rounded-lg border bg-white pl-3 pr-9 text-base text-slate-900 sm:text-sm',
             'transition-colors duration-150 focus:outline-none focus:ring-2',
             'disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500',
             error

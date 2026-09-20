@@ -17,7 +17,7 @@ export default function Alert({ onDismiss, className, children }) {
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss message"
-          className="rounded-md p-0.5 text-red-700 transition-colors duration-150 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
+          className="-m-1 rounded-md p-1.5 text-red-700 transition-colors duration-150 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
         >
           <X size={16} strokeWidth={1.5} />
         </button>

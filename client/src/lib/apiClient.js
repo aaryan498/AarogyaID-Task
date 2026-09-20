@@ -2,6 +2,16 @@ import { getStoredToken } from './authStorage'
 
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.'
 
+let unauthorizedHandler = null
+
+/**
+ * Lets the auth layer react to an expired/invalid session without this module
+ * importing React. Registered by AuthProvider.
+ */
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler
+}
+
 async function parseBody(response) {
   const text = await response.text()
   if (!text) return null
@@ -55,6 +65,11 @@ export async function apiRequest(
   const data = await parseBody(response)
 
   if (!response.ok) {
+    // A 401 on a request that carried a token means the session expired or was revoked.
+    // Auth endpoints are excluded so a wrong password is still shown as a normal error.
+    if (response.status === 401 && token && !path.startsWith('/auth/')) {
+      unauthorizedHandler?.()
+    }
     const error = new Error(getErrorMessage(data))
     error.status = response.status
     throw error

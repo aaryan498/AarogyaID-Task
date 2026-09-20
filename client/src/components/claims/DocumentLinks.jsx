@@ -7,7 +7,7 @@ export default function DocumentLinks({ urls }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:underline"
+            className="rounded-md text-sm font-medium text-violet-600 underline-offset-4 transition-colors duration-150 hover:text-violet-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
           >
             Document {index + 1}
             <span className="sr-only"> (opens in a new tab)</span>
