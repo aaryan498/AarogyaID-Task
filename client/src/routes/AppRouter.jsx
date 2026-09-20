@@ -1,6 +1,6 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
-import MarketingLayout from '../layouts/MarketingLayout'
-import AppLayout from '../layouts/AppLayout'
+import MarketingLayout from '../components/layout/MarketingLayout'
+import AppLayout from '../components/layout/AppLayout'
 import Spinner from '../components/ui/Spinner'
 import { useAuth } from '../hooks/useAuth'
 import { getRoleHome } from '../utils/roles'
