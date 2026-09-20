@@ -124,6 +124,7 @@ There is no seed script. Accounts are created through the registration page (`/r
 | --- | --- |
 | Application | https://aarogyaid-project-client.vercel.app |
 | API | https://aarogyaid-project-server.onrender.com |
+| API SWAGGER DOCS | https://aarogyaid-project-server.onrender.com/api/v1/docs |
 
 ## Deployment details
 
