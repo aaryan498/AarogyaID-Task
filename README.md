@@ -41,8 +41,8 @@ server/   NestJS REST API
 1. Clone the repository.
 
 ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/aaryan498/AarogyaID-Task.git
+   cd AarogyaID-Task
 ```
 
 2. Install and configure the server.
@@ -108,19 +108,22 @@ Both `.env` files are git-ignored. Copy the matching `.env.example` and fill in 
 
 ## Mock login credentials
 
-There is no seed script. Accounts are created through the registration page (`/register`) or `POST /api/v1/auth/register`, where the role is chosen at sign-up. Passwords must be at least 6 characters. Create one account per role and record the credentials here for reviewers.
+There is no seed script. Accounts are created through the registration page (`/register`) or `POST /api/v1/auth/register`, where the role is chosen at sign-up. Passwords must be at least 6 characters. Use the following accounts on the live deployment; a local instance uses its own database, so register accounts at `/register` there.
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Patient | `<fill in after creating test accounts>` | `<fill in after creating test accounts>` |
-| Insurer | `<fill in after creating test accounts>` | `<fill in after creating test accounts>` |
+| Role | Name | Email | Password |
+| --- | --- | --- | --- |
+| Patient | MOCK USER PATIENT | `patient@gmail.com` | `123456` |
+| Insurer | MOCK USER INSURER | `insurer@gmail.com` | `123456` |
 
 ## Live deployment
 
+> [!IMPORTANT]
+> **The Render server can take about 1 minute to start when it is sleeping. Please wait patiently while testing the deployed links.**
+
 | Item | URL |
 | --- | --- |
-| Application | `<fill in>` |
-| API | `<fill in>` |
+| Application | https://aarogyaid-project-client.vercel.app |
+| API | https://aarogyaid-project-server.onrender.com |
 
 ## Deployment details
 
