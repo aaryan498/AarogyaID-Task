@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import MarketingLayout from '../layouts/MarketingLayout'
 import AppLayout from '../layouts/AppLayout'
 import Spinner from '../components/ui/Spinner'
@@ -10,7 +10,10 @@ import Contact from '../pages/marketing/Contact'
 import Login from '../pages/auth/Login'
 import Register from '../pages/auth/Register'
 import NotFound from '../pages/NotFound'
-import PatientHomePlaceholder from '../pages/patient/PatientHomePlaceholder'
+import MyClaims from '../pages/patient/MyClaims'
+import SubmitClaimStep1 from '../pages/patient/SubmitClaimStep1'
+import UploadDocumentsStep2 from '../pages/patient/UploadDocumentsStep2'
+import ClaimDetail from '../pages/patient/ClaimDetail'
 import InsurerHomePlaceholder from '../pages/insurer/InsurerHomePlaceholder'
 
 function AuthLoading() {
@@ -79,10 +82,15 @@ export default function AppRouter() {
           path="/patient"
           element={
             <RequireRole role="PATIENT">
-              <PatientHomePlaceholder />
+              <Outlet />
             </RequireRole>
           }
-        />
+        >
+          <Route index element={<MyClaims />} />
+          <Route path="claims/new" element={<SubmitClaimStep1 />} />
+          <Route path="claims/:id/upload" element={<UploadDocumentsStep2 />} />
+          <Route path="claims/:id" element={<ClaimDetail />} />
+        </Route>
         <Route
           path="/insurer"
           element={

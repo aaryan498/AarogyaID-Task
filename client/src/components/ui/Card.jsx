@@ -1,6 +1,9 @@
 import clsx from 'clsx'
 
 const paddings = {
+  // `none` lets a child (e.g. a full-bleed table) own its spacing. A `p-0` className
+  // override can't be relied on because Tailwind utility order isn't guaranteed.
+  none: '',
   sm: 'p-4',
   md: 'p-6',
 }
