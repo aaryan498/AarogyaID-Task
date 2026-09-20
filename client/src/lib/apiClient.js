@@ -1,6 +1,8 @@
 import { getStoredToken } from './authStorage'
 
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.'
+const MALFORMED_RESPONSE_MESSAGE =
+  'Unexpected response from the server. Please check your connection or try again later.'
 
 let unauthorizedHandler = null
 
@@ -18,6 +20,13 @@ async function parseBody(response) {
   try {
     return JSON.parse(text)
   } catch {
+    // A successful response that is not JSON (for example an HTML page served because
+    // the API base URL is wrong) must not silently resolve to null.
+    if (response.ok) {
+      const error = new Error(MALFORMED_RESPONSE_MESSAGE)
+      error.status = response.status
+      throw error
+    }
     return null
   }
 }

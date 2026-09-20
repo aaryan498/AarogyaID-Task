@@ -8,6 +8,11 @@ const sizes = {
   sm: 'text-base',
 }
 
+const iconSizes = {
+  md: 'h-5 w-5',
+  sm: 'h-4 w-4',
+}
+
 export default function Logo({ size = 'md', className }) {
   const { user } = useAuth()
 
@@ -20,6 +25,15 @@ export default function Logo({ size = 'md', className }) {
         className,
       )}
     >
+      <img
+        src="/favicon.ico"
+        alt=""
+        aria-hidden="true"
+        className={clsx(
+          'mr-1.5 shrink-0 self-center object-contain',
+          iconSizes[size],
+        )}
+      />
       <span className="font-semibold text-slate-900">Aarogya</span>
       <span className="font-bold text-violet-600">ID</span>
     </Link>

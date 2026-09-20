@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -27,6 +29,7 @@ import { ClaimStatus } from './schemas/claim.schema';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { Role } from '../users/schemas/user.schema';
 import { GetClaimsFilterDto } from './dto/get-claims-filter.dto';
 
@@ -56,8 +59,11 @@ export class ClaimsController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden - Patients only.' })
-  async create(@Body() createClaimDto: CreateClaimDto) {
-    return await this.claimsService.create(createClaimDto);
+  async create(
+    @Body() createClaimDto: CreateClaimDto,
+    @GetUser('email') email: string,
+  ) {
+    return await this.claimsService.create({ ...createClaimDto, email });
   }
 
   /**
@@ -65,7 +71,24 @@ export class ClaimsController {
    */
   @Post(':id/upload-documents')
   @Roles(Role.PATIENT)
-  @UseInterceptors(FilesInterceptor('files', 10))
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+        if (allowedMimeTypes.includes(file.mimetype)) {
+          cb(null, true);
+          return;
+        }
+        cb(
+          new BadRequestException(
+            'Unsupported file type. Only PDF, JPG, and PNG files are allowed.',
+          ),
+          false,
+        );
+      },
+    }),
+  )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary: 'Upload supporting documents for a claim',
@@ -87,7 +110,12 @@ export class ClaimsController {
   async uploadDocuments(
     @Param('id') id: string,
     @UploadedFiles() files: Express.Multer.File[],
+    @GetUser('email') email: string,
   ) {
+    const claim = await this.claimsService.findOne(id);
+    if (claim.email.toLowerCase() !== email.toLowerCase()) {
+      throw new ForbiddenException('You do not have access to this claim');
+    }
     return await this.claimsService.uploadClaimDocuments(id, files);
   }
 
@@ -131,7 +159,17 @@ export class ClaimsController {
     description: 'List of claims for the patient retrieved successfully.',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  async findByEmail(@Query('email') email: string) {
+  async findByEmail(
+    @Query('email') email: string,
+    @GetUser('role') role: Role,
+    @GetUser('email') requesterEmail: string,
+  ) {
+    if (
+      role === Role.PATIENT &&
+      email?.toLowerCase() !== requesterEmail.toLowerCase()
+    ) {
+      throw new ForbiddenException('You can only view your own claims');
+    }
     return await this.claimsService.findByEmail(email);
   }
 
@@ -158,8 +196,19 @@ export class ClaimsController {
     status: 404,
     description: 'Claim not found.',
   })
-  async findOne(@Param('id') id: string) {
-    return await this.claimsService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @GetUser('role') role: Role,
+    @GetUser('email') email: string,
+  ) {
+    const claim = await this.claimsService.findOne(id);
+    if (
+      role === Role.PATIENT &&
+      claim.email.toLowerCase() !== email.toLowerCase()
+    ) {
+      throw new ForbiddenException('You do not have access to this claim');
+    }
+    return claim;
   }
 
   /**

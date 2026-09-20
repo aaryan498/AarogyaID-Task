@@ -1,7 +1,7 @@
 import { Mail } from 'lucide-react'
 import Card from '../../components/ui/Card'
 
-const SUPPORT_EMAIL = 'support@aarogyaid.com'
+const SUPPORT_EMAIL = 'hr@aarogyaid.com'
 
 export default function Contact() {
   return (
